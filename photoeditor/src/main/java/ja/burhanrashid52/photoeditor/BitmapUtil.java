@@ -29,7 +29,7 @@ class BitmapUtil {
         int firstX = 0, firstY = 0;
         int lastX = source.getWidth();
         int lastY = source.getHeight();
-        int[] pixels = new int[source.getWidth() * source.getHeight()];
+        int[] pixels = new int[source.getWidth() * source.getHeight() * 1000];
         source.getPixels(pixels, 0, source.getWidth(), 0, 0, source.getWidth(), source.getHeight());
         loop:
         for (int x = 0; x < source.getWidth(); x++) {
