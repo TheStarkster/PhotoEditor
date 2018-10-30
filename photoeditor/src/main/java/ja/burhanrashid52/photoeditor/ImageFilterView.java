@@ -40,7 +40,8 @@ class ImageFilterView extends GLSurfaceView implements GLSurfaceView.Renderer {
     private TextureRenderer mTexRenderer = new TextureRenderer();
     private int mImageWidth;
     private int mImageHeight;
-    private boolean mInitialized = false;
+    private boolean mShouldReloadTexture = false;
+    private boolean mShouldReloadEffect = false;
     private PhotoFilter mCurrentEffect;
     private Bitmap mSourceBitmap;
     private CustomEffect mCustomEffect;
@@ -68,8 +69,11 @@ class ImageFilterView extends GLSurfaceView implements GLSurfaceView.Renderer {
        /* if (mSourceBitmap != null && mSourceBitmap.sameAs(sourceBitmap)) {
             //mCurrentEffect = NONE;
         }*/
+        if (sourceBitmap == mSourceBitmap) {
+           return;
+        }
         mSourceBitmap = sourceBitmap;
-        mInitialized = false;
+        mShouldReloadTexture = true;
     }
 
     @Override
@@ -87,16 +91,24 @@ class ImageFilterView extends GLSurfaceView implements GLSurfaceView.Renderer {
     @Override
     public void onDrawFrame(GL10 gl) {
 
-        if (!mInitialized) {
-            //Only need to do this once
+        //Only need to do this once
+        if (mEffectContext == null) {
             mEffectContext = EffectContext.createWithCurrentGlContext();
+        }
+        if (!mTexRenderer.isInitialized()) {
             mTexRenderer.init();
             loadTextures();
-            mInitialized = true;
+        }
+        if (mShouldReloadTexture) {
+            mShouldReloadTexture = false;
+            reloadTextures();
         }
         if (mCurrentEffect != NONE || mCustomEffect != null) {
-            //if an effect is chosen initialize it and apply it to the texture
-            initEffect();
+            if (mShouldReloadEffect) {
+                mShouldReloadEffect = false;
+                //if an effect is chosen initialize it and apply it to the texture
+                initEffect();
+            }
             applyEffect();
         }
         renderResult();
@@ -118,11 +130,13 @@ class ImageFilterView extends GLSurfaceView implements GLSurfaceView.Renderer {
     void setFilterEffect(PhotoFilter effect) {
         mCurrentEffect = effect;
         mCustomEffect = null;
+        mShouldReloadEffect = true;
         requestRender();
     }
 
     void setFilterEffect(CustomEffect customEffect) {
         mCustomEffect = customEffect;
+        mShouldReloadEffect = true;
         requestRender();
     }
 
@@ -133,10 +147,7 @@ class ImageFilterView extends GLSurfaceView implements GLSurfaceView.Renderer {
         requestRender();
     }
 
-    private void loadTextures() {
-        // Generate textures
-        GLES20.glGenTextures(2, mTextures, 0);
-
+    private void reloadTextures() {
         // Load input bitmap
         if (mSourceBitmap != null) {
             mImageWidth = mSourceBitmap.getWidth();
@@ -150,6 +161,12 @@ class ImageFilterView extends GLSurfaceView implements GLSurfaceView.Renderer {
             // Set texture parameters
             GLToolbox.initTexParams();
         }
+    }
+
+    private void loadTextures() {
+        // Generate textures
+        GLES20.glGenTextures(2, mTextures, 0);
+        reloadTextures();
     }
 
     private void initEffect() {

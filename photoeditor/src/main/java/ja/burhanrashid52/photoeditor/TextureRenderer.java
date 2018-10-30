@@ -65,7 +65,18 @@ class TextureRenderer {
 
     private static final int FLOAT_SIZE_BYTES = 4;
 
+    private boolean mIsInitialized = false;
+
+    public boolean isInitialized() {
+        return mIsInitialized;
+    }
+
     public void init() {
+        if (mIsInitialized) {
+            return;
+        }
+        mIsInitialized = true;
+
         // Create program
         mProgram = GLToolbox.createProgram(VERTEX_SHADER, FRAGMENT_SHADER);
 
