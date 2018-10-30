@@ -155,8 +155,11 @@ class ImageFilterView extends GLSurfaceView implements GLSurfaceView.Renderer {
             mTexRenderer.updateTextureSize(mImageWidth, mImageHeight);
 
             // Upload to texture
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextures[0]);
+            GLToolbox.checkGlError("glBindTexture");
             GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, mSourceBitmap, 0);
+            GLToolbox.checkGlError("texImage2D");
 
             // Set texture parameters
             GLToolbox.initTexParams();
