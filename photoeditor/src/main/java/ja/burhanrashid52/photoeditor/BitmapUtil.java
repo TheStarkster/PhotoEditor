@@ -2,9 +2,12 @@ package ja.burhanrashid52.photoeditor;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.opengl.GLES20;
 import android.opengl.GLException;
 import android.opengl.GLSurfaceView;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 
 import javax.microedition.khronos.opengles.GL10;
@@ -106,4 +109,16 @@ class BitmapUtil {
         }
         return Bitmap.createBitmap(bitmapSource, w, h, Bitmap.Config.ARGB_8888);
     }
+
+    static Bitmap createBitmapFromGlFrameBuffer(int x, int y, int width, int height) throws OutOfMemoryError {
+        ByteBuffer buffer = ByteBuffer.allocateDirect(width * height * 4);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        buffer.rewind();
+        GLES20.glReadPixels(x, y, width, height, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buffer);
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        buffer.rewind();
+        bitmap.copyPixelsFromBuffer(buffer);
+        return bitmap;
+    }
+
 }

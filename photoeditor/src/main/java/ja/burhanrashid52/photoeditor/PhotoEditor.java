@@ -1111,4 +1111,13 @@ public class PhotoEditor implements BrushViewChangeListener, MultiTouchListener.
         }
         return convertedEmojiList;
     }
+
+    public void createFilterPreview(String jobId, CustomEffect effect, ImageFilterView.RenderJobCallback callback) {
+        parentView.submitRenderJob(jobId, effect, callback);
+    }
+
+    public void cancelFilterPreview(String jobId) {
+        parentView.cancelRenderJob(jobId);
+    }
+
 }
