@@ -35,7 +35,7 @@ public class PhotoEditorView extends RelativeLayout {
 
     private FilterImageView mImgSource;
     private BrushDrawingView mBrushDrawingView;
-    private ImageFilterView mImageFilterView;
+    private ZedgeImageFilterView mImageFilterView;
     private static final int imgSrcId = 1, brushSrcId = 2, glFilterId = 3;
 
     public PhotoEditorView(Context context) {
@@ -88,7 +88,7 @@ public class PhotoEditorView extends RelativeLayout {
         brushParam.addRule(RelativeLayout.ALIGN_BOTTOM, imgSrcId);
 
         //Setup GLSurface attributes
-        mImageFilterView = new ImageFilterView(getContext());
+        mImageFilterView = new ZedgeImageFilterView(getContext());
         mImageFilterView.setId(glFilterId);
         mImageFilterView.setVisibility(GONE);
 
@@ -170,9 +170,9 @@ public class PhotoEditorView extends RelativeLayout {
         mImageFilterView.setFilterEffect(customEffect);
     }
 
-    void submitRenderJob(String jobId, CustomEffect effect, ImageFilterView.RenderJobCallback callback) {
+    void submitRenderJob(ZedgeImageFilterView.RenderJob renderJob) {
         mImageFilterView.setVisibility(VISIBLE);
-        mImageFilterView.submitRenderJob(jobId, effect, callback);
+        mImageFilterView.submitRenderJob(renderJob);
     }
 
     void cancelRenderJob(String jobId) {

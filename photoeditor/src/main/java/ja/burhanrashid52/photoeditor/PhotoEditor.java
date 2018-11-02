@@ -1112,8 +1112,8 @@ public class PhotoEditor implements BrushViewChangeListener, MultiTouchListener.
         return convertedEmojiList;
     }
 
-    public void createFilterPreview(String jobId, CustomEffect effect, ImageFilterView.RenderJobCallback callback) {
-        parentView.submitRenderJob(jobId, effect, callback);
+    public void createFilterPreview(ZedgeImageFilterView.RenderJob renderJob) {
+        parentView.submitRenderJob(renderJob);
     }
 
     public void cancelFilterPreview(String jobId) {

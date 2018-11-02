@@ -11,13 +11,9 @@ import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -35,39 +31,21 @@ import static ja.burhanrashid52.photoeditor.PhotoFilter.*;
  * @version 0.1.2
  * @since 2/14/2018
  */
-public class ImageFilterView extends GLSurfaceView implements GLSurfaceView.Renderer {
+class ImageFilterView extends GLSurfaceView implements GLSurfaceView.Renderer {
 
     private static final String TAG = "ImageFilterView";
-    private int[] mTextures = new int[2];
-    private EffectContext mEffectContext;
-    private Effect mEffect;
-    private TextureRenderer mTexRenderer = new TextureRenderer();
-    private int mImageWidth;
-    private int mImageHeight;
-    private boolean mShouldReloadTexture = false;
-    private boolean mShouldReloadEffect = false;
-    private PhotoFilter mCurrentEffect;
-    private Bitmap mSourceBitmap;
-    private CustomEffect mCustomEffect;
-    private OnSaveBitmap mOnSaveBitmap;
-    private boolean isSaveImage = false;
-
-    public interface RenderJobCallback {
-        void onRenderJobDone(String jobName, Bitmap bitmap);
-    }
-
-    private static class RenderJob {
-        String jobId;
-        CustomEffect customEffect;
-        RenderJobCallback callback;
-        public RenderJob(String jobId, CustomEffect customEffect, RenderJobCallback callback) {
-            this.jobId = jobId;
-            this.callback = callback;
-            this.customEffect = customEffect;
-        }
-    }
-
-    private List<RenderJob> mRenderJobs = Collections.synchronizedList(new ArrayList<RenderJob>());
+    protected int[] mTextures = new int[2];
+    protected EffectContext mEffectContext;
+    protected Effect mEffect;
+    protected TextureRenderer mTexRenderer = new TextureRenderer();
+    protected int mImageWidth;
+    protected int mImageHeight;
+    private boolean mInitialized = false;
+    protected PhotoFilter mCurrentEffect;
+    protected Bitmap mSourceBitmap;
+    protected CustomEffect mCustomEffect;
+    protected OnSaveBitmap mOnSaveBitmap;
+    protected boolean isSaveImage = false;
 
     public ImageFilterView(Context context) {
         super(context);
@@ -90,11 +68,8 @@ public class ImageFilterView extends GLSurfaceView implements GLSurfaceView.Rend
        /* if (mSourceBitmap != null && mSourceBitmap.sameAs(sourceBitmap)) {
             //mCurrentEffect = NONE;
         }*/
-        if (sourceBitmap == mSourceBitmap) {
-           return;
-        }
         mSourceBitmap = sourceBitmap;
-        mShouldReloadTexture = true;
+        mInitialized = false;
     }
 
     @Override
@@ -109,89 +84,48 @@ public class ImageFilterView extends GLSurfaceView implements GLSurfaceView.Rend
         }
     }
 
-    private void drawFrame(GL10 gl, @Nullable RenderJob renderJob) {
-        //Only need to do this once
-        if (mEffectContext == null) {
-            mEffectContext = EffectContext.createWithCurrentGlContext();
-        }
-        if (!mTexRenderer.isInitialized()) {
-            mTexRenderer.init();
-            loadTextures();
-        }
-        if (mShouldReloadTexture) {
-            mShouldReloadTexture = false;
-            reloadTextures();
-        }
-        if (renderJob != null) {
-            initEffect(renderJob.customEffect, null);
-            applyEffect();
-            renderJob.callback.onRenderJobDone(
-                    renderJob.jobId, BitmapUtil.createBitmapFromGlFrameBuffer(0, 0, 200, 200));
-            // Reload the original effect after the job is done.
-            mShouldReloadEffect = true;
-        } else {
-            if (mCurrentEffect != NONE || mCustomEffect != null) {
-                if (mShouldReloadEffect) {
-                    mShouldReloadEffect = false;
-                    //if an effect is chosen initialize it and apply it to the texture
-                    initEffect(mCustomEffect, mCurrentEffect);
-                }
-                applyEffect();
-            }
-            renderResult();
-            if (isSaveImage) {
-                final Bitmap mFilterBitmap = BitmapUtil.createBitmapFromGLSurface(this, gl);
-                isSaveImage = false;
-                if (mOnSaveBitmap != null) {
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            mOnSaveBitmap.onBitmapReady(mFilterBitmap);
-                        }
-                    });
-                }
-            }
-        }
-    }
-
     @Override
     public void onDrawFrame(GL10 gl) {
-        if (!mRenderJobs.isEmpty()) {
-            RenderJob job = mRenderJobs.remove(0);
-            drawFrame(gl, job);
-            requestRender();
-        } else {
-            drawFrame(gl, null);
+
+        if (!mInitialized) {
+            //Only need to do this once
+            mEffectContext = EffectContext.createWithCurrentGlContext();
+            mTexRenderer.init();
+            loadTextures();
+            mInitialized = true;
+        }
+        if (mCurrentEffect != NONE || mCustomEffect != null) {
+            //if an effect is chosen initialize it and apply it to the texture
+            initEffect();
+            applyEffect();
+        }
+        renderResult();
+        if (isSaveImage) {
+            final Bitmap mFilterBitmap = BitmapUtil.createBitmapFromGLSurface(this, gl);
+            Log.e(TAG, "onDrawFrame: " + mFilterBitmap);
+            isSaveImage = false;
+            if (mOnSaveBitmap != null) {
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mOnSaveBitmap.onBitmapReady(mFilterBitmap);
+                    }
+                });
+            }
         }
     }
 
     void setFilterEffect(PhotoFilter effect) {
         mCurrentEffect = effect;
         mCustomEffect = null;
-        mShouldReloadEffect = true;
         requestRender();
     }
 
     void setFilterEffect(CustomEffect customEffect) {
         mCustomEffect = customEffect;
-        mShouldReloadEffect = true;
         requestRender();
     }
 
-    void submitRenderJob(String jobId, CustomEffect effect, RenderJobCallback callback) {
-        mRenderJobs.add(new RenderJob(jobId, effect, callback));
-        requestRender();
-    }
-
-    void cancelRenderJob(String jobId) {
-        synchronized (mRenderJobs) {
-            for (RenderJob renderJob : mRenderJobs) {
-                if (renderJob.jobId.equals(jobId)) {
-                    mRenderJobs.remove(renderJob);
-                }
-            }
-        }
-    }
 
     void saveBitmap(OnSaveBitmap onSaveBitmap) {
         mOnSaveBitmap = onSaveBitmap;
@@ -199,7 +133,10 @@ public class ImageFilterView extends GLSurfaceView implements GLSurfaceView.Rend
         requestRender();
     }
 
-    private void reloadTextures() {
+    private void loadTextures() {
+        // Generate textures
+        GLES20.glGenTextures(2, mTextures, 0);
+
         // Load input bitmap
         if (mSourceBitmap != null) {
             mImageWidth = mSourceBitmap.getWidth();
@@ -207,38 +144,28 @@ public class ImageFilterView extends GLSurfaceView implements GLSurfaceView.Rend
             mTexRenderer.updateTextureSize(mImageWidth, mImageHeight);
 
             // Upload to texture
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextures[0]);
-            GLToolbox.checkGlError("glBindTexture");
             GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, mSourceBitmap, 0);
-            GLToolbox.checkGlError("texImage2D");
 
             // Set texture parameters
             GLToolbox.initTexParams();
         }
     }
 
-    private void loadTextures() {
-        // Generate textures
-        GLES20.glGenTextures(2, mTextures, 0);
-        reloadTextures();
-    }
-
-    private void initEffect(@Nullable CustomEffect customEffect, @Nullable PhotoFilter builtinEffect) {
+    private void initEffect() {
         EffectFactory effectFactory = mEffectContext.getFactory();
         if (mEffect != null) {
             mEffect.release();
-            mEffect = null;
         }
-        if (customEffect != null) {
-            mEffect = effectFactory.createEffect(customEffect.getEffectName());
-            Map<String, Object> parameters = customEffect.getParameters();
+        if (mCustomEffect != null) {
+            mEffect = effectFactory.createEffect(mCustomEffect.getEffectName());
+            Map<String, Object> parameters = mCustomEffect.getParameters();
             for (Map.Entry<String, Object> param : parameters.entrySet()) {
                 mEffect.setParameter(param.getKey(), param.getValue());
             }
-        } else if (builtinEffect != null) {
+        } else {
             // Initialize the correct effect based on the selected menu/action item
-            switch (builtinEffect) {
+            switch (mCurrentEffect) {
 
                 case AUTO_FIX:
                     mEffect = effectFactory.createEffect(EFFECT_AUTOFIX);
@@ -333,12 +260,10 @@ public class ImageFilterView extends GLSurfaceView implements GLSurfaceView.Rend
     }
 
     private void applyEffect() {
-        if (mEffect != null) {
-            mEffect.apply(mTextures[0], mImageWidth, mImageHeight, mTextures[1]);
-        }
+        mEffect.apply(mTextures[0], mImageWidth, mImageHeight, mTextures[1]);
     }
 
-    private void renderResult() {
+    protected void renderResult() {
         if (mCurrentEffect != NONE || mCustomEffect != null) {
             // if no effect is chosen, just render the original bitmap
             mTexRenderer.renderTexture(mTextures[1]);
