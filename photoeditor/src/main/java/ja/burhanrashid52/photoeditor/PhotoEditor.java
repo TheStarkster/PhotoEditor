@@ -69,7 +69,7 @@ public class PhotoEditor implements BrushViewChangeListener, MultiTouchListener.
     private ColorFilter colorFilter = new ColorMatrixColorFilter(NEGATIVE);
 
 
-    private PhotoEditor(Builder builder) {
+    protected PhotoEditor(Builder builder) {
         this.context = builder.context;
         this.parentView = builder.parentView;
         this.imageView = builder.imageView;
@@ -1110,14 +1110,6 @@ public class PhotoEditor implements BrushViewChangeListener, MultiTouchListener.
             convertedEmojiList.add(convertEmoji(emojiUnicode));
         }
         return convertedEmojiList;
-    }
-
-    public void createFilterPreview(ZedgeImageFilterView.RenderJob renderJob) {
-        parentView.submitRenderJob(renderJob);
-    }
-
-    public void cancelFilterPreview(String jobId) {
-        parentView.cancelRenderJob(jobId);
     }
 
 }

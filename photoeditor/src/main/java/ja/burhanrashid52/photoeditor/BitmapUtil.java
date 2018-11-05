@@ -21,7 +21,7 @@ import javax.microedition.khronos.opengles.GL10;
  * @version 0.1.2
  * @since 5/21/2018
  */
-class BitmapUtil {
+public class BitmapUtil {
     /**
      * Remove transparency in edited bitmap
      *
@@ -81,7 +81,7 @@ class BitmapUtil {
      * @return save bitmap
      * @throws OutOfMemoryError error when system is out of memory to load and save bitmap
      */
-    static Bitmap createBitmapFromGLSurface(GLSurfaceView glSurfaceView, GL10 gl) throws OutOfMemoryError {
+    public static Bitmap createBitmapFromGLSurface(GLSurfaceView glSurfaceView, GL10 gl) throws OutOfMemoryError {
         int x = 0, y = 0;
         int w = glSurfaceView.getWidth();
         int h = glSurfaceView.getHeight();
@@ -110,7 +110,7 @@ class BitmapUtil {
         return Bitmap.createBitmap(bitmapSource, w, h, Bitmap.Config.ARGB_8888);
     }
 
-    static Bitmap createBitmapFromGlFrameBuffer(int x, int y, int width, int height) throws OutOfMemoryError {
+    public static Bitmap createBitmapFromGlFrameBuffer(int x, int y, int width, int height) throws OutOfMemoryError {
         ByteBuffer buffer = ByteBuffer.allocateDirect(width * height * 4);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
         buffer.rewind();

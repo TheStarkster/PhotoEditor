@@ -22,7 +22,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-class TextureRenderer {
+public class TextureRenderer {
 
     private int mProgram;
     private int mTexSamplerHandle;

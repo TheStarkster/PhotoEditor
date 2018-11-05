@@ -80,7 +80,7 @@ public class GLToolbox {
         }
     }
 
-    static void initTexParams() {
+    public static void initTexParams() {
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D,
                 GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D,

@@ -1,4 +1,4 @@
-package ja.burhanrashid52.photoeditor;
+package net.zedge.photoeditor;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -18,6 +18,12 @@ import java.util.List;
 import java.util.Map;
 
 import javax.microedition.khronos.opengles.GL10;
+
+import ja.burhanrashid52.photoeditor.BitmapUtil;
+import ja.burhanrashid52.photoeditor.CustomEffect;
+import ja.burhanrashid52.photoeditor.GLToolbox;
+import ja.burhanrashid52.photoeditor.ImageFilterView;
+import ja.burhanrashid52.photoeditor.PhotoFilter;
 
 public class ZedgeImageFilterView extends ImageFilterView {
 
@@ -53,7 +59,7 @@ public class ZedgeImageFilterView extends ImageFilterView {
     }
 
     @Override
-    void setSourceBitmap(Bitmap sourceBitmap) {
+    protected void setSourceBitmap(Bitmap sourceBitmap) {
         if (sourceBitmap == mSourceBitmap) {
            return;
         }
@@ -133,13 +139,13 @@ public class ZedgeImageFilterView extends ImageFilterView {
     }
 
     @Override
-    void setFilterEffect(PhotoFilter effect) {
+    protected void setFilterEffect(PhotoFilter effect) {
         mShouldReloadEffect = true;
         super.setFilterEffect(effect);
     }
 
     @Override
-    void setFilterEffect(CustomEffect customEffect) {
+    protected void setFilterEffect(CustomEffect customEffect) {
         mShouldReloadEffect = true;
         super.setFilterEffect(customEffect);
     }
