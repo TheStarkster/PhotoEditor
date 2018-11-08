@@ -254,8 +254,8 @@ class MultiTouchListener implements OnTouchListener {
         Rect borderRect = new Rect();
         border.getHitRect(borderRect);
 
-        int eventX = (int)event.getX()- borderRect.left;
-        int eventY = (int)event.getY() - borderRect.top;
+        int eventX = (int)event.getX();
+        int eventY = (int)event.getY();
 
         Rect imageRect = new Rect();
         image.getHitRect(imageRect);
@@ -263,15 +263,10 @@ class MultiTouchListener implements OnTouchListener {
         Rect hitRect = new Rect();
         view.getHitRect(hitRect);
 
-        ((PhotoEditorView) parentView).drawImageHitRect(imageRect);
-        ((PhotoEditorView) parentView).drawEventXY(eventX, eventY);
-        ((PhotoEditorView) parentView).drawViewRect(hitRect);
+
 
         Log.d("VIEWTYPE","VIEWTYPE:" + view);
         //Check if you hit outside the image. If you hit the frame around the view we say that that you hit a transparent pixel.
-        if(!imageRect.contains(eventX, eventY)){
-            return false;
-        }
 
 
 
@@ -280,8 +275,16 @@ class MultiTouchListener implements OnTouchListener {
 //        mVariableTransparentPixelsClickThroughRadius = (int)(mTransparentPixelsClickThroughRadius * view.getScaleX());
 
         //The eventX and Y for the actual image (discluding the frame and any views around it)
-        int imageEventX = eventX - (imageRect.left + borderRect.left);
-        int imageEventY = eventY - (imageRect.top + borderRect.top);
+        int imageEventX = eventX - borderRect.left;
+        int imageEventY = eventY - borderRect.top;
+
+        if(!imageRect.contains(imageEventX, imageEventY)){
+            return false;
+        }
+
+
+        imageEventX = eventX - (imageRect.left + borderRect.left);
+        imageEventY = eventY - (imageRect.top + borderRect.top);
 
         ((PhotoEditorView) parentView).drawEventXY2(imageEventX, imageEventY);
 
@@ -310,6 +313,10 @@ class MultiTouchListener implements OnTouchListener {
         } else if (bitmapY > bitmap.getHeight() - 1) {
             bitmapY = bitmap.getHeight() - 1;
         }
+
+        ((PhotoEditorView) parentView).drawImageHitRect(imageRect);
+        ((PhotoEditorView) parentView).drawEventXY(imageEventX, imageEventY);
+        ((PhotoEditorView) parentView).drawViewRect(hitRect);
 
         return isPixelsInRadiusOpaque(bitmap, bitmapX, bitmapY);
     }
