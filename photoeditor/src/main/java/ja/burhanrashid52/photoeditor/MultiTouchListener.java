@@ -263,6 +263,14 @@ class MultiTouchListener implements OnTouchListener {
         //Enable to enabled radius to scale together with scaling
 //        mVariableTransparentPixelsClickThroughRadius = (int)(mTransparentPixelsClickThroughRadius * view.getScaleX());
 
+        //The eventX and Y without border
+        int imageNoBorderEventX = eventX - borderRect.left;
+        int imageNoBorderventY = eventY - borderRect.top;
+
+        if(!imageRect.contains(imageNoBorderEventX, imageNoBorderventY)){
+            return false;
+        }
+
         //The eventX and Y for the actual image (discluding the frame and any views around it)
         int imageEventX = eventX - (imageRect.left + borderRect.left);
         int imageEventY = eventY - (imageRect.top + borderRect.top);
