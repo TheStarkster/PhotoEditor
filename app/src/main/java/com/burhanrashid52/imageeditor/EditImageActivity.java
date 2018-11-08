@@ -96,6 +96,9 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
         mPhotoEditor = new PhotoEditor.Builder(this, mPhotoEditorView)
                 .setPinchTextScalable(true) // set flag to make text scalable when pinch
+                .setDeleteView(imgFlip)
+                .setClickThroughTransparentPixels(true)
+                .setBorderFunctionalityEnabled(false)
                 //.setDefaultTextTypeface(mTextRobotoTf)
                 //.setDefaultEmojiTypeface(mEmojiTypeFace)
                 .build(); // build photo editor sdk
@@ -106,14 +109,16 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
         // mPhotoEditorView.getSource().setImageResource(R.drawable.color_palette);
     }
 
+    ImageView imgFlip;
+
     private void initViews() {
+
         ImageView imgUndo;
         ImageView imgRedo;
         ImageView imgCamera;
         ImageView imgGallery;
         ImageView imgSave;
         ImageView imgClose;
-        ImageView imgFlip;
 
         mPhotoEditorView = findViewById(R.id.photoEditorView);
         mTxtCurrentTool = findViewById(R.id.txtCurrentTool);
@@ -307,7 +312,7 @@ public class EditImageActivity extends BaseActivity implements OnPhotoEditorList
 
     @Override
     public void onStickerClick(Bitmap bitmap) {
-        mPhotoEditor.addImage(bitmap);
+        mPhotoEditor.addSticker(bitmap);
         mTxtCurrentTool.setText(R.string.label_sticker);
     }
 

@@ -27,7 +27,7 @@
             android:adjustViewBounds="true"
             android:contentDescription="@string/app_name"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_remove" />
+            android:src="@drawable/headgear_7" />
 
     </FrameLayout>
 

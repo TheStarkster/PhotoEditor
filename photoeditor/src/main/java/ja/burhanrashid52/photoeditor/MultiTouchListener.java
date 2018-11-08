@@ -249,9 +249,7 @@ class MultiTouchListener implements OnTouchListener {
         image.getHitRect(imageRect);
 
         //Check if you hit outside the image. If you hit the frame around the view we say that that you hit a transparent pixel.
-        if(!imageRect.contains(eventX, eventY)){
-            return false;
-        }
+
 
         //Get rect of border
         Rect borderRect = new Rect();
