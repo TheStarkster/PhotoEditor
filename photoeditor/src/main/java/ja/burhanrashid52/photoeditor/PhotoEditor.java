@@ -610,6 +610,14 @@ public class PhotoEditor implements BrushViewChangeListener, MultiTouchListener.
     }
 
     /**
+     * WARNING: Do not use unless you know what you are doing!
+     * @return All added views
+     */
+    public List<View> getAddedViewsList(){
+        return addedViews;
+    }
+
+    /**
      * Undo the last operation perform on the {@link PhotoEditor}
      *
      * @return true if there nothing more to undo
