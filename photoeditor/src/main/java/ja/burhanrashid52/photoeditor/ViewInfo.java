@@ -23,7 +23,10 @@ public class ViewInfo {
     private float scaleDownX = 0;
     private float scaleDownY = 0;
 
-    public ViewInfo(float scaleX, float scaleY) {
+    private ViewType viewType;
+
+    public ViewInfo(float scaleX, float scaleY, ViewType currentViewType) {
+        viewType = currentViewType;
         defaultScaleX = scaleX;
         defaultScaleY = scaleY;
         scaleDownX = defaultScaleX/SCALE_DOWN_FACTOR;
@@ -63,4 +66,7 @@ public class ViewInfo {
         return scaleDownY;
     }
 
+    public ViewType getViewType() {
+        return viewType;
+    }
 }

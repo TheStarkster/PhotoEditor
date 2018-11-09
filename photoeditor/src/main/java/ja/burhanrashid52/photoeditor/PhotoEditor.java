@@ -151,7 +151,7 @@ public class PhotoEditor implements BrushViewChangeListener, MultiTouchListener.
             frmBorder.setTag(false);
         }
 
-        imageRootView.setTag(R.id.viewInfoTag, new ViewInfo(imageRootView.getScaleX(), imageRootView.getScaleY()));
+        imageRootView.setTag(R.id.viewInfoTag, new ViewInfo(imageRootView.getScaleX(), imageRootView.getScaleY(), viewType));
 
         imageRootView.setOnTouchListener(multiTouchListener);
 
@@ -245,7 +245,7 @@ public class PhotoEditor implements BrushViewChangeListener, MultiTouchListener.
             frmBorder.setTag(false);
         }
 
-        textRootView.setTag(R.id.viewInfoTag, new ViewInfo(textRootView.getScaleX(), textRootView.getScaleY()));
+        textRootView.setTag(R.id.viewInfoTag, new ViewInfo(textRootView.getScaleX(), textRootView.getScaleY(), ViewType.TEXT));
 
         textRootView.setOnTouchListener(multiTouchListener);
         addViewToParent(textRootView, ViewType.TEXT);
@@ -343,7 +343,7 @@ public class PhotoEditor implements BrushViewChangeListener, MultiTouchListener.
             frmBorder.setTag(false);
         }
 
-        emojiRootView.setTag(R.id.viewInfoTag, new ViewInfo(emojiRootView.getScaleX(), emojiRootView.getScaleY()));
+        emojiRootView.setTag(R.id.viewInfoTag, new ViewInfo(emojiRootView.getScaleX(), emojiRootView.getScaleY(), ViewType.EMOJI));
 
         emojiRootView.setOnTouchListener(multiTouchListener);
         addViewToParent(emojiRootView, ViewType.EMOJI);
