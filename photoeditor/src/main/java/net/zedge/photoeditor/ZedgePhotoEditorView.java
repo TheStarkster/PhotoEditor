@@ -44,4 +44,9 @@ public class ZedgePhotoEditorView extends PhotoEditorView {
         mZedgeImageFilterView.cancelRenderJob(jobId);
     }
 
+    void removeFilter() {
+        mZedgeImageFilterView.setVisibility(GONE);
+        mZedgeImageFilterView.removeEffect();
+    }
+
 }

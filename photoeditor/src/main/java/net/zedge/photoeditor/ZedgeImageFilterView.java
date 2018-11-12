@@ -166,6 +166,13 @@ public class ZedgeImageFilterView extends ImageFilterView {
         }
     }
 
+
+    protected void removeEffect() {
+        mCurrentEffect = null;
+        mCustomEffect = null;
+        requestRender();
+    }
+
     private void reloadTextures() {
         // Load input bitmap
         if (mSourceBitmap != null) {

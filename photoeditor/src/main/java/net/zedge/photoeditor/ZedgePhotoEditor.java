@@ -21,6 +21,11 @@ public class ZedgePhotoEditor extends PhotoEditor {
         mZedgePhotoEditorView.cancelRenderJob(jobId);
     }
 
+
+    public void removeFilter() {
+        mZedgePhotoEditorView.removeFilter();
+    }
+
     public static class Builder extends PhotoEditor.Builder {
         ZedgePhotoEditorView zedgePhotoEditorView;
 
