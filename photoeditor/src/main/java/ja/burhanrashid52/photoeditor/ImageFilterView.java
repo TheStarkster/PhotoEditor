@@ -31,21 +31,21 @@ import static ja.burhanrashid52.photoeditor.PhotoFilter.*;
  * @version 0.1.2
  * @since 2/14/2018
  */
-class ImageFilterView extends GLSurfaceView implements GLSurfaceView.Renderer {
+public class ImageFilterView extends GLSurfaceView implements GLSurfaceView.Renderer {
 
     private static final String TAG = "ImageFilterView";
-    private int[] mTextures = new int[2];
-    private EffectContext mEffectContext;
-    private Effect mEffect;
-    private TextureRenderer mTexRenderer = new TextureRenderer();
-    private int mImageWidth;
-    private int mImageHeight;
+    protected int[] mTextures = new int[2];
+    protected EffectContext mEffectContext;
+    protected Effect mEffect;
+    protected TextureRenderer mTexRenderer = new TextureRenderer();
+    protected int mImageWidth;
+    protected int mImageHeight;
     private boolean mInitialized = false;
-    private PhotoFilter mCurrentEffect;
-    private Bitmap mSourceBitmap;
-    private CustomEffect mCustomEffect;
-    private OnSaveBitmap mOnSaveBitmap;
-    private boolean isSaveImage = false;
+    protected PhotoFilter mCurrentEffect;
+    protected Bitmap mSourceBitmap;
+    protected CustomEffect mCustomEffect;
+    protected OnSaveBitmap mOnSaveBitmap;
+    protected boolean isSaveImage = false;
 
     public ImageFilterView(Context context) {
         super(context);
@@ -64,7 +64,7 @@ class ImageFilterView extends GLSurfaceView implements GLSurfaceView.Renderer {
         setFilterEffect(NONE);
     }
 
-    void setSourceBitmap(Bitmap sourceBitmap) {
+    protected void setSourceBitmap(Bitmap sourceBitmap) {
        /* if (mSourceBitmap != null && mSourceBitmap.sameAs(sourceBitmap)) {
             //mCurrentEffect = NONE;
         }*/
@@ -115,13 +115,13 @@ class ImageFilterView extends GLSurfaceView implements GLSurfaceView.Renderer {
         }
     }
 
-    void setFilterEffect(PhotoFilter effect) {
+    protected void setFilterEffect(PhotoFilter effect) {
         mCurrentEffect = effect;
         mCustomEffect = null;
         requestRender();
     }
 
-    void setFilterEffect(CustomEffect customEffect) {
+    protected void setFilterEffect(CustomEffect customEffect) {
         mCustomEffect = customEffect;
         requestRender();
     }
@@ -263,7 +263,7 @@ class ImageFilterView extends GLSurfaceView implements GLSurfaceView.Renderer {
         mEffect.apply(mTextures[0], mImageWidth, mImageHeight, mTextures[1]);
     }
 
-    private void renderResult() {
+    protected void renderResult() {
         if (mCurrentEffect != NONE || mCustomEffect != null) {
             // if no effect is chosen, just render the original bitmap
             mTexRenderer.renderTexture(mTextures[1]);

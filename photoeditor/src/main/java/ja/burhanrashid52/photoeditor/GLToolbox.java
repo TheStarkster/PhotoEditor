@@ -18,7 +18,7 @@ package ja.burhanrashid52.photoeditor;
 
 import android.opengl.GLES20;
 
-class GLToolbox {
+public class GLToolbox {
 
     private static int loadShader(int shaderType, String source) {
         int shader = GLES20.glCreateShader(shaderType);
@@ -36,13 +36,14 @@ class GLToolbox {
         return shader;
     }
 
-    static int createProgram(String vertexSource, String fragmentSource) {
+    public static int createProgram(String vertexSource, String fragmentSource) {
         int vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexSource);
         if (vertexShader == 0) {
             return 0;
         }
         int pixelShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentSource);
         if (pixelShader == 0) {
+            GLES20.glDeleteShader(vertexShader);
             return 0;
         }
 
@@ -56,6 +57,13 @@ class GLToolbox {
             int[] linkStatus = new int[1];
             GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus,
                     0);
+
+            // The shaders can be deleted after being linked.
+            GLES20.glDetachShader(program, vertexShader);
+            GLES20.glDetachShader(program, pixelShader);
+            GLES20.glDeleteShader(vertexShader);
+            GLES20.glDeleteShader(pixelShader);
+
             if (linkStatus[0] != GLES20.GL_TRUE) {
                 String info = GLES20.glGetProgramInfoLog(program);
                 GLES20.glDeleteProgram(program);
@@ -65,14 +73,14 @@ class GLToolbox {
         return program;
     }
 
-    static void checkGlError(String op) {
+    public static void checkGlError(String op) {
         int error = GLES20.glGetError();
         if (error != GLES20.GL_NO_ERROR) {
             throw new RuntimeException(op + ": glError " + error);
         }
     }
 
-    static void initTexParams() {
+    public static void initTexParams() {
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D,
                 GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D,
