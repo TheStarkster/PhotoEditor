@@ -79,7 +79,7 @@ public class PhotoEditorView extends RelativeLayout {
 
         //Setup brush view
         mBrushDrawingView = new BrushDrawingView(getContext());
-        mBrushDrawingView.setVisibility(GONE);
+        mBrushDrawingView.setVisibility(VISIBLE);
         mBrushDrawingView.setId(brushSrcId);
         //Align brush to the size of image view
         RelativeLayout.LayoutParams brushParam = new RelativeLayout.LayoutParams(
@@ -91,7 +91,7 @@ public class PhotoEditorView extends RelativeLayout {
         //Setup GLSurface attributes
         mImageFilterView = createImageFilterView();
         mImageFilterView.setId(glFilterId);
-        mImageFilterView.setVisibility(GONE);
+        mImageFilterView.setVisibility(VISIBLE);
 
         //Align brush to the size of image view
         RelativeLayout.LayoutParams imgFilterParam = new RelativeLayout.LayoutParams(
@@ -160,13 +160,11 @@ public class PhotoEditorView extends RelativeLayout {
     }
 
     void setFilterEffect(PhotoFilter filterType) {
-        mImageFilterView.setVisibility(VISIBLE);
         mImageFilterView.setSourceBitmap(mImgSource.getBitmap());
         mImageFilterView.setFilterEffect(filterType);
     }
 
     void setFilterEffect(CustomEffect customEffect) {
-        mImageFilterView.setVisibility(VISIBLE);
         mImageFilterView.setSourceBitmap(mImgSource.getBitmap());
         mImageFilterView.setFilterEffect(customEffect);
     }
