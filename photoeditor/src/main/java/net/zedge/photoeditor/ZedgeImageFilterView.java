@@ -121,6 +121,9 @@ public class ZedgeImageFilterView extends ImageFilterView {
     @Override
     public void onDrawFrame(GL10 gl) {
         Log.d("ZIZI", "onDrawFrame");
+        if (mSourceBitmap == null) {
+            return;
+        }
         prepareToDraw();
         if (!mRenderJobs.isEmpty()) {
             drawJobFrame(mRenderJobs.remove(0));
