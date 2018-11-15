@@ -17,12 +17,15 @@
 package ja.burhanrashid52.photoeditor;
 
 import android.opengl.GLES20;
+import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 public class TextureRenderer {
+
+    private static String TAG = TextureRenderer.class.getCanonicalName();
 
     private int mProgram;
     private int mTexSamplerHandle;
@@ -75,10 +78,13 @@ public class TextureRenderer {
         if (mIsInitialized) {
             return;
         }
-        mIsInitialized = true;
-
         // Create program
-        mProgram = GLToolbox.createProgram(VERTEX_SHADER, FRAGMENT_SHADER);
+        try {
+            mProgram = GLToolbox.createProgram(VERTEX_SHADER, FRAGMENT_SHADER);
+        } catch (Exception e) {
+            Log.e(TAG, "Cannot create program", e);
+            return;
+        }
 
         // Bind attributes and uniforms
         mTexSamplerHandle = GLES20.glGetUniformLocation(mProgram,
@@ -95,6 +101,8 @@ public class TextureRenderer {
                 POS_VERTICES.length * FLOAT_SIZE_BYTES)
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
         mPosVertices.put(POS_VERTICES).position(0);
+
+        mIsInitialized = true;
     }
 
     public void tearDown() {
@@ -114,6 +122,10 @@ public class TextureRenderer {
     }
 
     public void renderTexture(int texId) {
+        if (!mIsInitialized) {
+            return;
+        }
+
         // Bind default FBO
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
 
