@@ -22,33 +22,32 @@ public class GLToolbox {
 
     private static int loadShader(int shaderType, String source) {
         int shader = GLES20.glCreateShader(shaderType);
-        if (shader != 0) {
-            GLES20.glShaderSource(shader, source);
-            GLES20.glCompileShader(shader);
-            int[] compiled = new int[1];
-            GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);
-            if (compiled[0] == 0) {
-                String info = GLES20.glGetShaderInfoLog(shader);
-                GLES20.glDeleteShader(shader);
-                throw new RuntimeException("Could not compile shader " + shaderType + ":" + info);
-            }
+        if (shader == 0) {
+            throw new RuntimeException("Could not create shader object: " + shaderType);
+        }
+        GLES20.glShaderSource(shader, source);
+        GLES20.glCompileShader(shader);
+        int[] compiled = new int[1];
+        GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);
+        if (compiled[0] == 0) {
+            String info = GLES20.glGetShaderInfoLog(shader);
+            GLES20.glDeleteShader(shader);
+            throw new RuntimeException("Could not compile shader " + shaderType + ":" + info);
         }
         return shader;
     }
 
     public static int createProgram(String vertexSource, String fragmentSource) {
-        int vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexSource);
-        if (vertexShader == 0) {
-            return 0;
-        }
-        int pixelShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentSource);
-        if (pixelShader == 0) {
-            GLES20.glDeleteShader(vertexShader);
-            return 0;
-        }
-
-        int program = GLES20.glCreateProgram();
-        if (program != 0) {
+        int vertexShader = 0;
+        int pixelShader = 0;
+        int program = 0;
+        try {
+            vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexSource);
+            pixelShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentSource);
+            program = GLES20.glCreateProgram();
+            if (program == 0) {
+                throw new RuntimeException("Could not create program object");
+            }
             GLES20.glAttachShader(program, vertexShader);
             checkGlError("glAttachShader");
             GLES20.glAttachShader(program, pixelShader);
@@ -56,21 +55,35 @@ public class GLToolbox {
             GLES20.glLinkProgram(program);
             int[] linkStatus = new int[1];
             GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus,
-                    0);
+                                  0);
 
             // The shaders can be deleted after being linked.
             GLES20.glDetachShader(program, vertexShader);
             GLES20.glDetachShader(program, pixelShader);
             GLES20.glDeleteShader(vertexShader);
             GLES20.glDeleteShader(pixelShader);
+            vertexShader = 0;
+            pixelShader = 0;
 
             if (linkStatus[0] != GLES20.GL_TRUE) {
                 String info = GLES20.glGetProgramInfoLog(program);
                 GLES20.glDeleteProgram(program);
+                program = 0;
                 throw new RuntimeException("Could not link program: " + info);
             }
+            return program;
+        } catch (Exception e) {
+            if (vertexShader != 0) {
+                GLES20.glDeleteShader(vertexShader);
+            }
+            if (pixelShader != 0) {
+                GLES20.glDeleteShader(pixelShader);
+            }
+            if (program != 0) {
+                GLES20.glDeleteProgram(program);
+            }
+            throw e;
         }
-        return program;
     }
 
     public static void checkGlError(String op) {
