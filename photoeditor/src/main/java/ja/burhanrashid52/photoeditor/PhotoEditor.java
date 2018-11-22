@@ -845,7 +845,7 @@ public class PhotoEditor implements BrushViewChangeListener, MultiTouchListener.
             }
 
             @Override
-            public void onFailure(Exception e) {
+            public void onFailure(Throwable e) {
                 onSaveListener.onFailure(e);
             }
         });
@@ -910,7 +910,7 @@ public class PhotoEditor implements BrushViewChangeListener, MultiTouchListener.
             }
 
             @Override
-            public void onFailure(Exception e) {
+            public void onFailure(Throwable e) {
                 onSaveBitmap.onFailure(e);
             }
         });

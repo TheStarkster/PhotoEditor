@@ -104,13 +104,24 @@ public class ZedgeImageFilterView extends ImageFilterView {
         }
         renderResult();
         if (isSaveImage) {
-            final Bitmap mFilterBitmap = BitmapUtil.createBitmapFromGLSurface(this, gl);
             isSaveImage = false;
-            if (mOnSaveBitmap != null) {
+            try {
+                final Bitmap mFilterBitmap = BitmapUtil.createBitmapFromGLSurface(this, gl);
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        mOnSaveBitmap.onBitmapReady(mFilterBitmap);
+                        if (mOnSaveBitmap != null) {
+                            mOnSaveBitmap.onBitmapReady(mFilterBitmap);
+                        }
+                    }
+                });
+            } catch (final Throwable e) {
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mOnSaveBitmap != null) {
+                            mOnSaveBitmap.onFailure(e);
+                        }
                     }
                 });
             }
