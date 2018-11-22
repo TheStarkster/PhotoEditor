@@ -148,7 +148,7 @@ public class PhotoEditorView extends RelativeLayout {
                 }
 
                 @Override
-                public void onFailure(Exception e) {
+                public void onFailure(Throwable e) {
                     onSaveBitmap.onFailure(e);
                 }
             });
