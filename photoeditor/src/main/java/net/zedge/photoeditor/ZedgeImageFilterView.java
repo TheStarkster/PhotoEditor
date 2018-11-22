@@ -2,20 +2,17 @@ package net.zedge.photoeditor;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.media.effect.Effect;
 import android.media.effect.EffectContext;
-import android.media.effect.EffectFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -30,6 +27,8 @@ public class ZedgeImageFilterView extends ImageFilterView {
     private static final String TAG = "ZedgeImageFilterView";
     private boolean mShouldReloadTexture = false;
     private boolean mShouldReloadEffect = false;
+    private Effect mNewEffect = null;
+    private final Object mDrawLock = new Object();
 
     public interface RenderJobCallback {
         void onRenderJobDone(String jobName, Bitmap bitmap);
@@ -37,12 +36,12 @@ public class ZedgeImageFilterView extends ImageFilterView {
 
     public static class RenderJob {
         String jobId;
-        CustomEffect customEffect;
+        Effect effect;
         float scale;
         RenderJobCallback callback;
-        public RenderJob(String jobId, CustomEffect customEffect, float scale, RenderJobCallback callback) {
+        public RenderJob(String jobId, Effect effect, float scale, RenderJobCallback callback) {
             this.jobId = jobId;
-            this.customEffect = customEffect;
+            this.effect = effect;
             this.scale = scale;
             this.callback = callback;
         }
@@ -60,11 +59,13 @@ public class ZedgeImageFilterView extends ImageFilterView {
 
     @Override
     protected void setSourceBitmap(Bitmap sourceBitmap) {
-        if (sourceBitmap == mSourceBitmap) {
-           return;
+        synchronized (mDrawLock) {
+            if (sourceBitmap == mSourceBitmap) {
+                return;
+            }
+            mSourceBitmap = sourceBitmap;
+            mShouldReloadTexture = true;
         }
-        mSourceBitmap = sourceBitmap;
-        mShouldReloadTexture = true;
     }
 
     private void prepareToDraw() {
@@ -83,29 +84,27 @@ public class ZedgeImageFilterView extends ImageFilterView {
     }
 
     private void drawJobFrame(RenderJob renderJob) {
-        initEffect(renderJob.customEffect);
         int viewPortWidth = Math.round(mImageWidth * renderJob.scale);
         int viewPortHeight = Math.round(mImageHeight * renderJob.scale);
-        applyEffect(viewPortWidth, viewPortHeight);
+        applyEffect(renderJob.effect, viewPortWidth, viewPortHeight);
         renderJob.callback.onRenderJobDone(
                 renderJob.jobId,
                 BitmapUtil.createBitmapFromGlFrameBuffer(
                         0, 0, viewPortWidth, viewPortHeight));
+        renderJob.effect.release();
     }
 
     private void drawNormalFrame(GL10 gl) {
-        if (mCustomEffect != null) {
-            if (mShouldReloadEffect) {
-                mShouldReloadEffect = false;
-                //if an effect is chosen initialize it and apply it to the texture
-                initEffect(mCustomEffect);
-            }
-            applyEffect(mImageWidth, mImageHeight);
+        if (mShouldReloadEffect) {
+            mShouldReloadEffect = false;
+            initEffect();
+        }
+        if (mEffect != null) {
+            applyEffect(mEffect, mImageWidth, mImageHeight);
         }
         renderResult();
         if (isSaveImage) {
             final Bitmap mFilterBitmap = BitmapUtil.createBitmapFromGLSurface(this, gl);
-            Log.e(TAG, "onDrawFrame: " + mFilterBitmap);
             isSaveImage = false;
             if (mOnSaveBitmap != null) {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -120,47 +119,70 @@ public class ZedgeImageFilterView extends ImageFilterView {
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        Log.d("ZIZI", "onDrawFrame");
-        if (mSourceBitmap == null) {
-            return;
-        }
-        prepareToDraw();
-        if (!mRenderJobs.isEmpty()) {
-            drawJobFrame(mRenderJobs.remove(0));
-
-            // Reload the effect because the job might have replaced it.
-            mShouldReloadEffect = true;
-            drawNormalFrame(gl);
-
-            if (!mRenderJobs.isEmpty()) {
-                // Trigger another render iteration to handle the next job.
-                requestRender();
+        synchronized (mDrawLock) {
+            if (mSourceBitmap == null) {
+                return;
             }
+            prepareToDraw();
+            if (!mRenderJobs.isEmpty()) {
+                drawJobFrame(mRenderJobs.remove(0));
+                drawNormalFrame(gl);
+                if (!mRenderJobs.isEmpty()) {
+                    // Trigger another render iteration to handle the next job.
+                    requestRender();
+                }
+            } else {
+                drawNormalFrame(gl);
+            }
+        }
+    }
+
+    @Override
+    protected void renderResult() {
+        if (mEffect != null) {
+            // render the result of applyEffect()
+            mTexRenderer.renderTexture(mTextures[1]);
         } else {
-            drawNormalFrame(gl);
+            // if no effect is chosen, just render the original bitmap
+            mTexRenderer.renderTexture(mTextures[0]);
         }
     }
 
     @Override
     protected void setFilterEffect(PhotoFilter effect) {
-        mShouldReloadEffect = true;
-        super.setFilterEffect(effect);
+        synchronized (mDrawLock) {
+            if (effect == PhotoFilter.NONE) {
+                removeEffect();
+            } else {
+                throw new UnsupportedOperationException();
+            }
+        }
     }
 
     @Override
     protected void setFilterEffect(CustomEffect customEffect) {
-        mShouldReloadEffect = true;
-        super.setFilterEffect(customEffect);
+        synchronized (mDrawLock) {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    public void setFilterEffect(Effect effect) {
+        synchronized (mDrawLock) {
+            mNewEffect = effect;
+            mShouldReloadEffect = true;
+            requestRender();
+        }
     }
 
     void submitRenderJob(RenderJob renderJob) {
-        Log.d("ZIZI", "submitRenderJob");
-        mRenderJobs.add(renderJob);
-        requestRender();
+        synchronized (mDrawLock) {
+            mRenderJobs.add(renderJob);
+            requestRender();
+        }
     }
 
     void cancelRenderJob(String jobId) {
-        synchronized (mRenderJobs) {
+        synchronized (mDrawLock) {
             for (RenderJob renderJob : mRenderJobs) {
                 if (renderJob.jobId.equals(jobId)) {
                     mRenderJobs.remove(renderJob);
@@ -169,11 +191,14 @@ public class ZedgeImageFilterView extends ImageFilterView {
         }
     }
 
-
     protected void removeEffect() {
-        mCurrentEffect = null;
-        mCustomEffect = null;
-        requestRender();
+        synchronized (mDrawLock) {
+            mCurrentEffect = PhotoFilter.NONE;
+            mCustomEffect = null;
+            mNewEffect = null;
+            mShouldReloadEffect = true;
+            requestRender();
+        }
     }
 
     private void reloadTextures() {
@@ -196,30 +221,22 @@ public class ZedgeImageFilterView extends ImageFilterView {
     }
 
     private void createTextures() {
-        Log.d("ZIZI", "LOAD TEXTURE");
-        // Generate textures
         GLES20.glGenTextures(2, mTextures, 0);
     }
 
-    private void initEffect(@Nullable CustomEffect customEffect) {
-        EffectFactory effectFactory = mEffectContext.getFactory();
+    private void initEffect() {
         if (mEffect != null) {
             mEffect.release();
             mEffect = null;
         }
-        if (customEffect != null) {
-            mEffect = effectFactory.createEffect(customEffect.getEffectName());
-            Map<String, Object> parameters = customEffect.getParameters();
-            for (Map.Entry<String, Object> param : parameters.entrySet()) {
-                mEffect.setParameter(param.getKey(), param.getValue());
-            }
+        if (mNewEffect != null) {
+            mEffect = mNewEffect;
+            mNewEffect = null;
         }
     }
 
-    private void applyEffect(int viewPortWidth, int viewPortHeight) {
-        if (mEffect != null) {
-            mEffect.apply(mTextures[0], viewPortWidth, viewPortHeight, mTextures[1]);
-        }
+    private void applyEffect(Effect effect, int viewPortWidth, int viewPortHeight) {
+        effect.apply(mTextures[0], viewPortWidth, viewPortHeight, mTextures[1]);
     }
 
 }

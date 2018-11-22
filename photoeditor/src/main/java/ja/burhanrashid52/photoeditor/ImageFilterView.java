@@ -41,7 +41,7 @@ public class ImageFilterView extends GLSurfaceView implements GLSurfaceView.Rend
     protected int mImageWidth;
     protected int mImageHeight;
     private boolean mInitialized = false;
-    protected PhotoFilter mCurrentEffect;
+    protected PhotoFilter mCurrentEffect = NONE;
     protected Bitmap mSourceBitmap;
     protected CustomEffect mCustomEffect;
     protected OnSaveBitmap mOnSaveBitmap;
@@ -61,7 +61,6 @@ public class ImageFilterView extends GLSurfaceView implements GLSurfaceView.Rend
         setEGLContextClientVersion(2);
         setRenderer(this);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-        setFilterEffect(NONE);
     }
 
     protected void setSourceBitmap(Bitmap sourceBitmap) {

@@ -1,6 +1,7 @@
 package net.zedge.photoeditor;
 
 import android.content.Context;
+import android.media.effect.Effect;
 
 import ja.burhanrashid52.photoeditor.PhotoEditor;
 
@@ -13,6 +14,10 @@ public class ZedgePhotoEditor extends PhotoEditor {
         mZedgePhotoEditorView = builder.zedgePhotoEditorView;
     }
 
+    public void setFilterEffect(Effect effect) {
+        mZedgePhotoEditorView.setFilterEffect(effect);
+    }
+
     public void createFilterPreview(ZedgeImageFilterView.RenderJob renderJob) {
         mZedgePhotoEditorView.submitRenderJob(renderJob);
     }
@@ -20,7 +25,6 @@ public class ZedgePhotoEditor extends PhotoEditor {
     public void cancelFilterPreview(String jobId) {
         mZedgePhotoEditorView.cancelRenderJob(jobId);
     }
-
 
     public void removeFilter() {
         mZedgePhotoEditorView.removeFilter();
