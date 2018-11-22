@@ -1,6 +1,7 @@
 package net.zedge.photoeditor;
 
 import android.content.Context;
+import android.media.effect.Effect;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
@@ -33,6 +34,10 @@ public class ZedgePhotoEditorView extends PhotoEditorView {
     protected ImageFilterView createImageFilterView() {
         mZedgeImageFilterView = new ZedgeImageFilterView(getContext());
         return mZedgeImageFilterView;
+    }
+
+    public void setFilterEffect(Effect effect) {
+        mZedgeImageFilterView.setFilterEffect(effect);
     }
 
     void submitRenderJob(ZedgeImageFilterView.RenderJob renderJob) {
