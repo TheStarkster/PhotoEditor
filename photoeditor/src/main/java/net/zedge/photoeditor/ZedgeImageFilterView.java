@@ -30,20 +30,30 @@ public class ZedgeImageFilterView extends ImageFilterView {
     private Effect mNewEffect = null;
     private final Object mDrawLock = new Object();
 
-    public interface RenderJobCallback {
-        void onRenderJobDone(String jobName, Bitmap bitmap);
+    public interface RenderJobSuccessCallback {
+        void onRenderJobSuccess(String jobName, Bitmap bitmap);
+    }
+
+    public interface RenderJobFailureCallback {
+        void onRenderJobFailure(String jobName, Throwable t);
     }
 
     public static class RenderJob {
         String jobId;
         Effect effect;
         float scale;
-        RenderJobCallback callback;
-        public RenderJob(String jobId, Effect effect, float scale, RenderJobCallback callback) {
+        RenderJobSuccessCallback successCallback;
+        RenderJobFailureCallback failureCallback;
+        public RenderJob(String jobId,
+                         Effect effect,
+                         float scale,
+                         RenderJobSuccessCallback successCallback,
+                         RenderJobFailureCallback failureCallback) {
             this.jobId = jobId;
             this.effect = effect;
             this.scale = scale;
-            this.callback = callback;
+            this.successCallback = successCallback;
+            this.failureCallback = failureCallback;
         }
     }
 
@@ -87,10 +97,13 @@ public class ZedgeImageFilterView extends ImageFilterView {
         int viewPortWidth = Math.round(mImageWidth * renderJob.scale);
         int viewPortHeight = Math.round(mImageHeight * renderJob.scale);
         applyEffect(renderJob.effect, viewPortWidth, viewPortHeight);
-        renderJob.callback.onRenderJobDone(
-                renderJob.jobId,
-                BitmapUtil.createBitmapFromGlFrameBuffer(
-                        0, 0, viewPortWidth, viewPortHeight));
+        try {
+            Bitmap bitmap = BitmapUtil.createBitmapFromGlFrameBuffer(
+                    0, 0, viewPortWidth, viewPortHeight);
+            renderJob.successCallback.onRenderJobSuccess(renderJob.jobId, bitmap);
+        } catch (Throwable t) {
+            renderJob.failureCallback.onRenderJobFailure(renderJob.jobId, t);
+        }
         renderJob.effect.release();
     }
 
