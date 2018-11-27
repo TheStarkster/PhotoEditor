@@ -5,6 +5,7 @@ import android.media.effect.Effect;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 
 import ja.burhanrashid52.photoeditor.ImageFilterView;
 import ja.burhanrashid52.photoeditor.PhotoEditorView;
@@ -12,6 +13,7 @@ import ja.burhanrashid52.photoeditor.PhotoEditorView;
 public class ZedgePhotoEditorView extends PhotoEditorView {
 
     private ZedgeImageFilterView mZedgeImageFilterView;
+    private Boolean mIsTouchEnabled = true;
 
     public ZedgePhotoEditorView(Context context) {
         super(context);
@@ -54,4 +56,25 @@ public class ZedgePhotoEditorView extends PhotoEditorView {
         mZedgeImageFilterView.removeEffect();
     }
 
+    public void setTouchEnabled(Boolean enabled) {
+        mIsTouchEnabled = enabled;
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        if (mIsTouchEnabled) {
+            return super.onInterceptTouchEvent(ev);
+        } else {
+            return true;
+        }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (mIsTouchEnabled) {
+            return super.onTouchEvent(event);
+        } else {
+            return true;
+        }
+    }
 }
