@@ -30,6 +30,8 @@ import java.util.Stack;
  */
 public class BrushDrawingView extends View {
 
+    private Logger mLogger;
+
     private float mBrushSize = 25;
     private float mBrushEraserSize = 50;
     private int mOpacity = 255;
@@ -59,6 +61,10 @@ public class BrushDrawingView extends View {
     public BrushDrawingView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         setupBrushDrawing();
+    }
+
+    public void setLogger(Logger logger) {
+        mLogger = logger;
     }
 
     private void setupBrushDrawing() {
@@ -166,8 +172,16 @@ public class BrushDrawingView extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        Bitmap canvasBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-        mDrawCanvas = new Canvas(canvasBitmap);
+        if (mBrushDrawMode) {
+            try {
+                Bitmap canvasBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+                mDrawCanvas = new Canvas(canvasBitmap);
+            } catch (OutOfMemoryError e) {
+                if (mLogger != null) {
+                    mLogger.log("Cannot create drawing canvas", e);
+                }
+            }
+        }
     }
 
     @Override
@@ -274,7 +288,9 @@ public class BrushDrawingView extends View {
     private void touchUp() {
         mPath.lineTo(mTouchX, mTouchY);
         // Commit the path to our offscreen
-        mDrawCanvas.drawPath(mPath, mDrawPaint);
+        if (mDrawCanvas != null) {
+            mDrawCanvas.drawPath(mPath, mDrawPaint);
+        }
         // kill this so we don't double draw
         mDrawnPaths.push(new LinePath(mPath, mDrawPaint));
         mPath = new Path();

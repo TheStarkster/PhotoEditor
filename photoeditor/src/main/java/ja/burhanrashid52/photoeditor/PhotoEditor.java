@@ -55,7 +55,7 @@ public class PhotoEditor implements BrushViewChangeListener, MultiTouchListener.
     private PhotoEditorView parentView;
     private ImageView imageView;
     private View deleteView;
-    private BrushDrawingView brushDrawingView;
+    protected BrushDrawingView brushDrawingView;
     private List<View> addedViews;
     private List<View> redoViews;
     private View lastSelectedView;
@@ -67,7 +67,6 @@ public class PhotoEditor implements BrushViewChangeListener, MultiTouchListener.
     private Typeface mDefaultTextTypeface;
     private Typeface mDefaultEmojiTypeface;
     private ColorFilter colorFilter = new ColorMatrixColorFilter(NEGATIVE);
-
 
     protected PhotoEditor(Builder builder) {
         this.context = builder.context;
