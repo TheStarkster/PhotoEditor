@@ -1,6 +1,4 @@
 <resources>
-    <string name="app_name">PhotoEditor</string>
-
     <string-array name="photo_editor_emoji">
 
         <!-- Smiles -->
